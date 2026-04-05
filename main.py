@@ -12,7 +12,7 @@ CORS(app) # Enable CORS for all routes
 
 # Load models once when the server starts
 print("Loading YOLO models...")
-model = YOLO("yolo11s.pt")
+model = YOLO("yyolov8n.pt")
 print("Models loaded successfully.")
 
 # ImageKit Configuration (Replace with your actual keys)
