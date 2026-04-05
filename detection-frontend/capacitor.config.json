@@ -1,0 +1,9 @@
+{
+  "appId": "com.antigravity.detector",
+  "appName": "Detection Gallery",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "bundledWebRuntime": false
+}

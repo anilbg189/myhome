@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Node.js
+node_modules/
+dist/
+.env
+
+# Large Files (Optional, but recommended to keep repo small)
+# *.pt
+
+# OS
+.DS_Store
