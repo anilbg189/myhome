@@ -12,7 +12,17 @@ CORS(app) # Enable CORS for all routes
 
 # Load models once when the server starts
 print("Loading YOLO models...")
-model = YOLO("yyolov8n.pt")
+
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        model = YOLO("yolo8n.pt")
+    return model
+
+
+# model = YOLO("yyolov8n.pt")
 print("Models loaded successfully.")
 
 # ImageKit Configuration (Replace with your actual keys)
@@ -43,6 +53,8 @@ def detect_person():
 
     if frame is None:
         return jsonify({"error": "Failed to decode image"}), 400
+
+    model = get_model()
 
     # Run inference
     results = model.predict(frame, imgsz=640, conf=0.3, verbose=False)
