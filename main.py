@@ -13,12 +13,13 @@ CORS(app) # Enable CORS for all routes
 # Load models once when the server starts
 print("Loading YOLO models...")
 
+# model = YOLO("yolo8n.pt")
 model = None
 
 def get_model():
     global model
     if model is None:
-        model = YOLO("yolo8n.pt")
+        model = YOLO("yolo11s.pt")
     return model
 
 
