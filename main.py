@@ -19,7 +19,7 @@ model = None
 def get_model():
     global model
     if model is None:
-        model = YOLO("yolo11s.pt")
+        model = YOLO("yolo26n.pt")
     return model
 
 

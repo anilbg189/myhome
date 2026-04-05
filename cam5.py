@@ -65,7 +65,7 @@ while True:
                     if count > 0:
                         print(f"API returned: {count} person(s) detected")
                 else:
-                    print(f"Server Error ({response.status_code}): {response.text[:100]}")
+                    print(f"Server Error ({response.status_code}): {response.reason}")
             except requests.exceptions.SSLError as ssl_err:
                 print(f"SSL Certificate Error: {ssl_err}")
                 print("Tip: Run 'pip install --upgrade certifi' or set VERIFY_SSL = False in cam5.py")
