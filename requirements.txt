@@ -1,0 +1,10 @@
+flask
+flask-cors
+opencv-python-headless
+numpy
+ultralytics
+imagekitio
+httpx
+torch
+torchvision
+torchaudio
