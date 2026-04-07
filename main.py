@@ -41,9 +41,11 @@ imagekit = ImageKit(
 # Cooldown logic
 last_upload_time = None
 UPLOAD_COOLDOWN = timedelta(minutes=2)
+frame_count = 0
 
 @app.route('/detect', methods=['POST'])
 def detect_person():
+    global frame_count, last_upload_time
     if 'image' not in request.files:
         return jsonify({"error": "No image provided"}), 400
     
@@ -57,8 +59,12 @@ def detect_person():
 
     model = get_model()
 
-    # Run inference
-    results = model.predict(frame, imgsz=640, conf=0.3, verbose=False)
+    frame_count += 1
+
+    results = []
+    if frame_count % 5 == 0:
+        # Run inference
+        results = model.predict(frame, imgsz=320, device="cpu", conf=0.3, verbose=False, half=False, augment=False)
     
     count: int = 0
     for r in results:
@@ -70,7 +76,6 @@ def detect_person():
     if count > 0:
         print(f"{count} person detected")
         
-        global last_upload_time
         current_time = datetime.now()
         
         if last_upload_time is None or (current_time - last_upload_time) >= UPLOAD_COOLDOWN:

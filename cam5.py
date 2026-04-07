@@ -53,11 +53,14 @@ while True:
 
     if frame is not None:
         # Encode frame as JPEG
-        success, buffer = cv2.imencode('.jpg', frame)
+        frame = cv2.resize(frame, (320, 240))
+        success, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 60])
         if success:
             try:
                 # Send the frame to the detection API
+                # print("Sending frame to API...")
                 response = requests.post(API_URL, files={"image": buffer.tobytes()}, verify=VERIFY_SSL)
+                # print(response.json())
                 
                 if response.status_code == 200:
                     data = response.json()
