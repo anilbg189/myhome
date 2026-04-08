@@ -6,6 +6,8 @@ from ultralytics import YOLO
 from imagekitio import ImageKit
 from datetime import datetime, timedelta
 import time
+import firebase_admin
+from firebase_admin import credentials, messaging
 
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes
@@ -42,10 +44,25 @@ imagekit = ImageKit(
 last_upload_time = None
 UPLOAD_COOLDOWN = timedelta(minutes=2)
 frame_count = 0
+detection_enabled = True
+registration_tokens = [] # Store device tokens for FCM
+
+# Initialize Firebase Admin SDK
+try:
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
+    print("Firebase Admin SDK initialized.")
+except Exception as e:
+    print(f"Failed to initialize Firebase Admin SDK: {e}")
+    print("Push notifications will be disabled until serviceAccountKey.json is provided.")
 
 @app.route('/detect', methods=['POST'])
 def detect_person():
-    global frame_count, last_upload_time
+    global frame_count, last_upload_time, detection_enabled
+    
+    if not detection_enabled:
+        return jsonify({"person_count": 0, "status": "detection_disabled"})
+
     if 'image' not in request.files:
         return jsonify({"error": "No image provided"}), 400
     
@@ -75,6 +92,9 @@ def detect_person():
                 
     if count > 0:
         print(f"{count} person detected")
+        
+        # Send mobile notification
+        send_push_notification("Person Detected!", f"{count} person(s) spotted in the camera.")
         
         current_time = datetime.now()
         
@@ -109,6 +129,8 @@ def get_images():
     try:
         from_date = request.args.get('from_date')
         to_date = request.args.get('to_date')
+        skip = int(request.args.get('skip', 0))
+        limit = int(request.args.get('limit', 20))
         
         # Build Lucene-like search query for ImageKit
         # Docs: https://docs.imagekit.io/api-reference/media-library-management-apis/list-and-search-assets
@@ -128,7 +150,8 @@ def get_images():
         results = imagekit.assets.list(
             search_query=search_query,
             sort="DESC_CREATED",
-            limit=100
+            limit=limit,
+            skip=skip
         )
         
         images = []
@@ -146,6 +169,47 @@ def get_images():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+@app.route('/status', methods=['GET'])
+def get_status():
+    global detection_enabled
+    return jsonify({"detection_enabled": detection_enabled})
+
+@app.route('/toggle-detection', methods=['POST'])
+def toggle_detection():
+    global detection_enabled
+    detection_enabled = not detection_enabled
+    return jsonify({"detection_enabled": detection_enabled})
+
+@app.route('/register-token', methods=['POST'])
+def register_token():
+    global registration_tokens
+    data = request.json
+    token = data.get('token')
+    if token and token not in registration_tokens:
+        registration_tokens.append(token)
+        print(f"Token registered: {token}")
+    return jsonify({"status": "success"})
+
+def send_push_notification(title, body):
+    global registration_tokens
+    if not registration_tokens:
+        print("not registered tokens")
+        return
+    
+    for token in registration_tokens:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=body,
+            ),
+            token=token,
+        )
+        try:
+            response = messaging.send(message)
+            print(f"Successfully sent message: {response}")
+        except Exception as e:
+            print(f"Failed to send notification to {token}: {e}")
 
 if __name__ == '__main__':
     # Run the server on port 5000

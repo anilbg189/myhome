@@ -32,7 +32,7 @@ class RTSPStreamReader:
 
 # API endpoint for person detection
 API_URL = "https://myhome-7rfa.onrender.com/detect"
-# API_URL = "http://127.0.0.1:5000/detect" # Local server for testing
+# API_URL = "http://127.0.0.1:5001/detect" # Local server for testing
 VERIFY_SSL = False  # Set to False as a workaround for SSL certificate errors
 
 # Open the webcam (0 = default camera)
@@ -58,9 +58,9 @@ while True:
         if success:
             try:
                 # Send the frame to the detection API
-                # print("Sending frame to API...")
+                print("Sending frame to API...")
                 response = requests.post(API_URL, files={"image": buffer.tobytes()}, verify=VERIFY_SSL)
-                # print(response.json())
+                print(response.json())
                 
                 if response.status_code == 200:
                     data = response.json()

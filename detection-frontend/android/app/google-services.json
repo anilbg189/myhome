@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "988455327682",
+    "project_id": "my-home-d7040",
+    "storage_bucket": "my-home-d7040.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:988455327682:android:67ad523c79f4577161285b",
+        "android_client_info": {
+          "package_name": "com.antigravity.detector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCT79mmNmf3BLb6FrSvx9zYknLgvQ-tka0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
