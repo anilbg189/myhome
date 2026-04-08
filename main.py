@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import time
 import firebase_admin
 from firebase_admin import credentials, messaging
+import json
+import os
 
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes
@@ -45,7 +47,26 @@ last_upload_time = None
 UPLOAD_COOLDOWN = timedelta(minutes=2)
 frame_count = 0
 detection_enabled = True
-registration_tokens = [] # Store device tokens for FCM
+TOKENS_FILE = "tokens.json"
+
+def load_tokens():
+    if os.path.exists(TOKENS_FILE):
+        try:
+            with open(TOKENS_FILE, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading tokens: {e}")
+    return []
+
+def save_tokens(tokens):
+    try:
+        with open(TOKENS_FILE, "w") as f:
+            json.dump(tokens, f)
+    except Exception as e:
+        print(f"Error saving tokens: {e}")
+
+registration_tokens = load_tokens() # Store device tokens for FCM
+print(f"Loaded {len(registration_tokens)} tokens from storage.")
 
 # Initialize Firebase Admin SDK
 try:
@@ -78,10 +99,9 @@ def detect_person():
 
     frame_count += 1
 
-    results = []
-    if frame_count % 5 == 0:
-        # Run inference
-        results = model.predict(frame, imgsz=320, device="cpu", conf=0.3, verbose=False, half=False, augment=False)
+    # Run inference on EVERY frame to avoid missing detections, 
+    # since the client already throttles hits to every 3 seconds.
+    results = model.predict(frame, imgsz=320, device="cpu", conf=0.3, verbose=False, half=False, augment=False)
     
     count: int = 0
     for r in results:
@@ -188,7 +208,8 @@ def register_token():
     token = data.get('token')
     if token and token not in registration_tokens:
         registration_tokens.append(token)
-        print(f"Token registered: {token}")
+        save_tokens(registration_tokens)
+        print(f"Token registered and saved: {token}")
     return jsonify({"status": "success"})
 
 def send_push_notification(title, body):
@@ -196,6 +217,8 @@ def send_push_notification(title, body):
     if not registration_tokens:
         print("not registered tokens")
         return
+    
+    print("registration_tokens : ",registration_tokens)
     
     for token in registration_tokens:
         message = messaging.Message(
@@ -207,7 +230,7 @@ def send_push_notification(title, body):
         )
         try:
             response = messaging.send(message)
-            print(f"Successfully sent message: {response}")
+            print(f"Successfully sent message to {token}: {response}")
         except Exception as e:
             print(f"Failed to send notification to {token}: {e}")
 
