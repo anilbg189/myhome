@@ -5,3 +5,4 @@ numpy
 ultralytics
 imagekitio
 httpx
+firebase_admin
