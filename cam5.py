@@ -75,8 +75,8 @@ while True:
             except Exception as e:
                 print(f"API Error: {e}")
 
-        # Add a small delay to avoid overwhelming the server
-        time.sleep(0.5)
+        # Add a delay of 3 seconds between API hits
+        time.sleep(3.0)
 
         # Press 'q' to quit
         if cv2.waitKey(1) & 0xFF == ord("q"):
